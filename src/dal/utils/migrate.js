@@ -3,14 +3,12 @@ const drizzle = require('drizzle-orm/postgres-js').drizzle;
 const migrate = require('drizzle-orm/postgres-js/migrator').migrate;
 const postgres = require('postgres');
 
-const { host, password, port, user, migrationsPath } =
+const { host, password, port, user, migrationsPath, database } =
   configuration().drizzle;
-
-console.log(process.env.DB_DATABASE);
 
 const runMigrations = async () => {
   const sql = postgres(
-    `postgres://${user}:${password}@${host}:${port}/${process.env.DB_DATABASE}`,
+    `postgres://${user}:${password}@${host}:${port}/${database}`,
     { max: 1 },
   );
   const db = drizzle(sql);
