@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrations:generate": "yarn drizzle-kit generate:pg",
+    "migrations:run": "node src/dal/utils/migrate.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -33,6 +35,8 @@
     "joi": "^17.11.0",
     "morgan": "^1.10.0",
     "nest-winston": "^1.9.4",
+    "pg": "^8.11.3",
+    "postgres": "^3.4.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "winston": "^3.11.0"
@@ -44,6 +48,7 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
+    "@types/pg": "^8.10.9",
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
