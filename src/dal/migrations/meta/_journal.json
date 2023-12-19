@@ -8,6 +8,13 @@
       "when": 1702990698598,
       "tag": "0000_friendly_zaran",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1703000738893,
+      "tag": "0001_fearless_azazel",
+      "breakpoints": true
     }
   ]
 }
