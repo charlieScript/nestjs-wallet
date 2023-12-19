@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1702990698598,
+      "tag": "0000_friendly_zaran",
+      "breakpoints": true
+    }
+  ]
+}

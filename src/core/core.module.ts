@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { configuration, validationSchema } from "./config";
+import { WinstonModule } from 'nest-winston';
 
 
 @Module({
@@ -10,12 +11,9 @@ import { configuration, validationSchema } from "./config";
       load: [configuration],
       validationSchema,
     }),
+    WinstonModule.forRoot(configuration().logging),
   ],
-  providers: [
-    
-  ],
-  exports: [
-    
-  ],
+  providers: [],
+  exports: [],
 })
 export class CoreModule {}
