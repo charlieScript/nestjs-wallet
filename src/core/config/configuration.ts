@@ -2,6 +2,8 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { LoggerOptions } from 'winston';
 
 const ENV = process.env.NODE_ENV;
 
@@ -20,6 +22,25 @@ export const configuration = () => ({
         ),
       }),
     ],
+  },
+  database: {
+    type: 'postgres',
+    port: process.env.DB_PORT,
+    host: process.env.DB_HOST,
+    username: process.env.DB_USERNAME,
+    migrationsRun: process.env.DB_MIGRATIONS_RUN,
+    connection: process.env.DB_CONNECTION,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    logging: process.env.TYPEORM_LOGGING as LoggerOptions,
+    namingStrategy: new SnakeNamingStrategy(),
+    synchronize: false,
+    entities: [path.join('typeorm/entities/**/*.entity.{ts,js}')],
+    migrations: [path.join(__dirname, 'migrations', '*.{ts,js}')],
+    cli: {
+      migrationsDir: './src/typeorm/migrations',
+      entitiesDir: 'typeorm/entities',
+    },
   },
   appName: process.env.APP_NAME,
   appPort: process.env.PORT,
