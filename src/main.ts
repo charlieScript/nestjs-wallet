@@ -18,8 +18,8 @@ async function createApp() {
 
   app.setGlobalPrefix(appName, {
     exclude: [{ path: 'health', method: RequestMethod.GET }],
-  });
-  // app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  }); 
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.use(morgan('combined'));
   app.enableCors({
     credentials: true,

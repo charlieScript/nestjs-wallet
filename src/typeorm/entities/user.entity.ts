@@ -15,10 +15,6 @@ export class User extends Base {
   @Exclude()
   pin: string;
 
-  @Column({ default: false })
-  @Exclude()
-  merchantActive: boolean;
-
   constructor(partial: Partial<User>) {
     super();
     Object.assign(this, partial);

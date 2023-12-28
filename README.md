@@ -71,3 +71,10 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+
+// "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ./src/typeorm/ormconfig.ts",
+    // "migration:create": "yarn run typeorm migration:create -n",
+    // "migration:generate": "env-cmd -f .env yarn run build && env-cmd -f .env yarn run typeorm migration:generate -- -n",
+    // "migration:run": "env-cmd -f .env yarn run build && env-cmd -f .env  yarn run typeorm migration:run",
+    // "runx": "npx tsx"
