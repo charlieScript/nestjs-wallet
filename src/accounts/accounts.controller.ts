@@ -12,6 +12,6 @@ export class AccountsController {
 
   @Post('/')
   async test() {
-    return {}
+    return this.accountService.transfer({ senderAccountId: '1', receiverAccountId: '2', amount: 100 })
   }
 }

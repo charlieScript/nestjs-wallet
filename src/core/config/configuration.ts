@@ -32,7 +32,7 @@ export const configuration = () => ({
     connection: process.env.DB_CONNECTION,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    logging: process.env.DB_LOGGING,
+    logging: true,
     namingStrategy: new SnakeNamingStrategy(),
     synchronize: false,
     entities: [path.join(__dirname, 'typeorm/entities/**/*.entity.{ts,js}')],

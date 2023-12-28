@@ -16,3 +16,14 @@ export interface IDepositAccount {
   accountId: string;
   amount: number;
 }
+
+export interface IWithdrawAccount {
+  accountId: string;
+  amount: number;
+}
+
+export interface ITransferAccount {
+  senderAccountId: string;
+  receiverAccountId: string;
+  amount: number;
+}
