@@ -19,6 +19,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import Joi from 'joi';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BANKING_SERVICE, BankingInterface } from 'src/banking/interface/banking.interface';
 
 @Injectable()
 export class AccountsService {
@@ -30,6 +31,8 @@ export class AccountsService {
 
     @InjectRepository(Account)
     private readonly accountRepo: Repository<Account>,
+    @Inject(BANKING_SERVICE)
+    private readonly bankingService: BankingInterface,
   ) {}
 
   async getBalance(userId: string) {

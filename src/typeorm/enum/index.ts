@@ -9,4 +9,5 @@ export enum TRANSACTION_PURPOSE {
   TRANSFER = 'transfer',
   REVERSAL = 'reversal',
   WITHDRAWAL = 'withdrawal',
+  CARD_FUNDING = 'card_funding',
 }
