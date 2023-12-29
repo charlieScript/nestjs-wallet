@@ -1,25 +1,15 @@
 import {
   ConflictException,
-  HttpException,
-  HttpStatus,
   Inject,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
-import {
-  InjectDataSource,
-  InjectEntityManager,
-  InjectRepository,
-  TypeOrmDataSourceFactory,
-} from '@nestjs/typeorm';
 import {
   Account,
   TRANSACTION_PURPOSE,
   TRANSACTION_TYPE,
   Transaction,
-  User,
 } from 'src/typeorm';
-import { EntityManager, Repository, QueryRunner, DataSource } from 'typeorm';
+import { QueryRunner, DataSource } from 'typeorm';
 import {
   ICreditAccount,
   IDebitAccount,
@@ -28,7 +18,6 @@ import {
   IWithdrawAccount,
 } from './interfaces/accounts.interface';
 import { v4 } from 'uuid';
-import { DepositAccountDto } from './dtos/account.dto';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import Joi from 'joi';
@@ -41,6 +30,7 @@ export class AccountsService {
 
     private entityManager: DataSource,
   ) {}
+
 
   async creditAccount(data: ICreditAccount, t: QueryRunner) {
     const { accountId, amount, purpose, reference = v4(), metadata } = data;
@@ -210,12 +200,12 @@ export class AccountsService {
 
   async transfer(payload: ITransferAccount) {
     const { senderAccountId, receiverAccountId, amount } = payload;
-
     const schema = Joi.object({
       senderAccountId: Joi.string().uuid().required(),
       receiverAccountId: Joi.string().uuid().required(),
       amount: Joi.number().min(1).required(),
     });
+
 
     const validation = schema.validate({
       senderAccountId,
@@ -229,6 +219,8 @@ export class AccountsService {
         error: validation.error.details[0].message,
       };
     }
+
+    console.log('validation', validation);
 
     const t = await this.transactionProvider();
 

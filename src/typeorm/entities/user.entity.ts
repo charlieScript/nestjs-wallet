@@ -1,11 +1,12 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Unique } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Base } from '../utils';
 
 @Entity()
+@Unique(['email'])
 export class User extends Base {
   @Column()
-  username: string;
+  email: string;
 
   @Column()
   @Exclude()
