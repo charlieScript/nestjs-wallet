@@ -1,15 +1,12 @@
-import {
-  ConflictException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import {
   Account,
   TRANSACTION_PURPOSE,
   TRANSACTION_TYPE,
   Transaction,
+  User,
 } from 'src/typeorm';
-import { QueryRunner, DataSource } from 'typeorm';
+import { QueryRunner, DataSource, Repository } from 'typeorm';
 import {
   ICreditAccount,
   IDebitAccount,
@@ -21,6 +18,7 @@ import { v4 } from 'uuid';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import Joi from 'joi';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AccountsService {
@@ -29,8 +27,20 @@ export class AccountsService {
     private readonly logger: Logger,
 
     private entityManager: DataSource,
+
+    @InjectRepository(Account)
+    private readonly accountRepo: Repository<Account>,
   ) {}
 
+  async getBalance(userId: string) {
+    const account = await this.accountRepo
+      .createQueryBuilder('account')
+      .innerJoinAndSelect('account.user', 'user', 'user.id = :userId', {
+        userId,
+      })
+      .getOne();
+    return account.balance;
+  }
 
   async creditAccount(data: ICreditAccount, t: QueryRunner) {
     const { accountId, amount, purpose, reference = v4(), metadata } = data;
@@ -206,7 +216,6 @@ export class AccountsService {
       amount: Joi.number().min(1).required(),
     });
 
-
     const validation = schema.validate({
       senderAccountId,
       receiverAccountId,
@@ -299,19 +308,21 @@ export class AccountsService {
             t,
           );
         }
-        return this.debitAccount({
-          amount: transaction.amount,
-          accountId: transaction.account.id,
-          metadata: {
-            originalReference: transaction.reference,
+        return this.debitAccount(
+          {
+            amount: transaction.amount,
+            accountId: transaction.account.id,
+            metadata: {
+              originalReference: transaction.reference,
+            },
+            purpose,
+            reference: txn_reference,
           },
-          purpose,
-          reference: txn_reference,
-        }, t);
+          t,
+        );
       });
 
       const reversalResult = await Promise.all(transactionsArray);
-
 
       const failedTxns = reversalResult.filter((result) => !result.success);
       if (failedTxns.length) {
@@ -319,12 +330,11 @@ export class AccountsService {
         return reversalResult;
       }
 
-       await t.commitTransaction();
-       return {
-         success: true,
-         message: 'Reversal successful',
-       };
-
+      await t.commitTransaction();
+      return {
+        success: true,
+        message: 'Reversal successful',
+      };
     } catch (error) {
       await t.rollbackTransaction();
       return {
