@@ -35,12 +35,14 @@ export const configuration = () => ({
     logging: false,
     namingStrategy: new SnakeNamingStrategy(),
     synchronize: false,
-    entities: [path.join(__dirname, 'typeorm/entities/**/*.entity.{ts,js}')],
-    migrations: [path.join(__dirname, 'src/typeorm/migrations/*.{ts,js}')],
+    entities: [
+      path.join(__dirname, '../src/typeorm/entities', '**', '*.entity.{ts,js}'),
+    ],
+    migrations: [path.join(__dirname, 'src/typeorm/migrations', '*.{ts,js}')],
     cli: {
-      migrationsDir: 'src/typeorm/migrations',
-      entitiesDir: 'typeorm/entities',
-    },
+      migrationsDir: './src/typeorm/migrations',
+      entitiesDir: 'src/typeorm/entities',
+    }, 
   },
   paystack: {
     baseUrl: process.env.PAYSTACK_BASE_URL,

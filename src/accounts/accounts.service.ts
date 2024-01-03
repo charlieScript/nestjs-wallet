@@ -1,6 +1,7 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   Account,
+  CardTransactions,
   TRANSACTION_PURPOSE,
   TRANSACTION_TYPE,
   Transaction,
@@ -19,7 +20,11 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import Joi from 'joi';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BANKING_SERVICE, BankingInterface } from 'src/banking/interface/banking.interface';
+import {
+  BANKING_SERVICE,
+  BankingInterface,
+} from 'src/banking/interface/banking.interface';
+import { ChargeCardDto } from './dtos/account.dto';
 
 @Injectable()
 export class AccountsService {
@@ -36,13 +41,8 @@ export class AccountsService {
   ) {}
 
   async getBalance(userId: string) {
-    const account = await this.accountRepo
-      .createQueryBuilder('account')
-      .innerJoinAndSelect('account.user', 'user', 'user.id = :userId', {
-        userId,
-      })
-      .getOne();
-    return account.balance;
+    const account = await this.getAccountByUserId(userId);
+    return account?.balance;
   }
 
   async creditAccount(data: ICreditAccount, t: QueryRunner) {
@@ -141,25 +141,25 @@ export class AccountsService {
       );
 
       if (!creditResult.success) {
-        t.rollbackTransaction();
+        await t.rollbackTransaction();
         throw new ConflictException('Deposit failed');
       }
 
-      t.commitTransaction();
+      await t.commitTransaction();
 
       return {
         success: true,
         message: 'Deposit successful',
       };
     } catch (error) {
-      t.rollbackTransaction();
+      await t.rollbackTransaction();
       this.logger.error(error);
       return {
         success: false,
         error: 'there was error',
       };
     } finally {
-      t.release();
+      await t.release();
     }
   }
 
@@ -200,14 +200,14 @@ export class AccountsService {
         message: 'withdrawal successful',
       };
     } catch (error) {
-      t.rollbackTransaction();
+      await t.rollbackTransaction();
       this.logger.error(error);
       return {
         success: false,
         error: 'there was error',
       };
     } finally {
-      t.release();
+      await t.release();
     }
   }
 
@@ -280,7 +280,7 @@ export class AccountsService {
         error: 'there was error',
       };
     } finally {
-      t.release();
+      await t.release();
     }
   }
 
@@ -345,7 +345,59 @@ export class AccountsService {
         error: 'Internal server error',
       };
     } finally {
-      t.release();
+      await t.release();
+    }
+  }
+
+  async cardFunding(payload: ChargeCardDto, user: User) {
+    const { amount, cvv, expiry_month, expiry_year, pan } = payload;
+      const t = await this.transactionProvider();
+    try {
+      const account = await this.getAccountByUserId(user.id);
+
+      const chargeCardResult = await this.bankingService.chargeCard({
+        amount,
+        cvv,
+        expiry_month,
+        expiry_year,
+        pan,
+        email: user.email,
+      });
+
+      console.log('chargeCardResult', chargeCardResult);
+
+
+
+      if (chargeCardResult.success) {
+        await this.creditAccount(
+          {
+            accountId: account.id,
+            amount,
+            purpose: TRANSACTION_PURPOSE.CARD_FUNDING,
+            metadata: {
+              reference: chargeCardResult.data.reference,
+            },
+          },
+          t,
+        );
+        const cardTx = this.entityManager.manager.create(CardTransactions, {
+          externalReference: chargeCardResult.data.reference
+        })
+
+        await this.entityManager.manager.save(cardTx)
+      }
+
+      await t.commitTransaction();
+      return {
+        success: true,
+        message: 'Card funding successful',
+      };
+    } catch (error) {
+      console.error(error);
+      await t.rollbackTransaction();
+      throw new InternalServerErrorException('Internal server error');
+    } finally {
+      await t.release()
     }
   }
 
@@ -355,5 +407,14 @@ export class AccountsService {
     await t.connect();
     await t.startTransaction();
     return t;
+  }
+
+  private async getAccountByUserId(userId: string): Promise<Account | null> {
+    return this.accountRepo
+      .createQueryBuilder('account')
+      .innerJoinAndSelect('account.user', 'user', 'user.id = :userId', {
+        userId,
+      })
+      .getOne();
   }
 }

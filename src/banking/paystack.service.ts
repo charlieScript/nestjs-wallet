@@ -4,7 +4,7 @@ import { paystackClient } from './utils/paystack-client';
 import { BankingInterface, IChargeCard } from './interface/banking.interface';
 import { AxiosInstance } from 'axios';
 import { User } from 'src/typeorm';
-import Joi from 'joi';
+import * as Joi from 'joi';
 
 
 @Injectable()
@@ -27,8 +27,8 @@ export class PaystackService implements BankingInterface {
       expiry_month: Joi.string().required(),
       expiry_year: Joi.string().required(),
       amount: Joi.number().required(),
-      email: Joi.string().email().required(),
     });
+
     const validation = schema.validate({ pan, cvv, expiry_month, expiry_year, amount });
     if (validation.error) {
       return {
@@ -36,6 +36,7 @@ export class PaystackService implements BankingInterface {
         error: validation.error.details[0].message,
       };
     }
+
 
     try {
       const charge = await this.client.post('/charge', {
@@ -50,7 +51,7 @@ export class PaystackService implements BankingInterface {
       if (charge.data.status === true) {
         return {
           success: true,
-          data: charge.data.data,
+          data: charge.data,
         }
       }
     } catch (error) {
